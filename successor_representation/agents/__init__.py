@@ -1,0 +1,2 @@
+from successor_representation.agents.random_agent import SRRandomAgent
+from successor_representation.agents.q_agent import SRQLearningAgent

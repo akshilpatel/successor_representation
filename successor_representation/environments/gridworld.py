@@ -5,7 +5,9 @@ from typing import Union, Optional, Tuple, List
 from copy import deepcopy
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib import colors
 from IPython.display import clear_output
+from collections import OrderedDict
 
 class GridWorld(gym.Env):
     def __init__(self, 
@@ -45,6 +47,9 @@ class GridWorld(gym.Env):
             raise ValueError("Argument stochasticity must be a probability.")
         else:
             self.stochasticity = stochasticity        
+
+    def set_seed(self, seed: int):
+        self.np_random = np.random.default_rng(seed)
 
     @staticmethod
     def _process_layout(layout: str, layout_key: dict) -> np.ndarray:
@@ -144,30 +149,49 @@ class GridWorld(gym.Env):
         return obs, info
 
     def render(self, figsize=(10, 7)):
-        render_grid = deepcopy(self.grid)
+
+        render_colours  = OrderedDict(
+            block_colour= "#202020", # black -1
+            space_colour= "#fff7cc",  # off-white 0
+            terminal_colour= "#ffd700", # 1 muted red
+            agent_colour= "#507051", #  # 2 orange
+        )
+                    
+        bounds = list(range(3))
+        cmap = colors.ListedColormap(render_colours.values())
+        norm = colors.BoundaryNorm(bounds, cmap.N)
+
         fig = plt.figure(num = "env_render", figsize=figsize)
-        
         ax = plt.gca()
         ax.clear()
-        clear_output(wait=True)
-        render_grid[self._agent_pos] = 1
-        # Add terminal states
 
-        # for coord in self._terminal_coords:
-        #     plt.annotate("T", coord, va="center", ha="center", c="b")
-       
+        render_grid = deepcopy(self.grid)
+        render_grid[self._agent_pos] = 2
+
+
+        # Colour terminal states
+        for coord in self._terminal_coords:
+            render_grid[coord] = 1
+
+        # Annotate init_state
+        for coord in self._init_coords:
+            ax.annotate("S", coord[::-1], va="center", ha="center", c="black", weight = "bold")
+
+        # Annotate rewarded states
         for coord, r_val in self._reward_coords.items():
-            plt.annotate(str(r_val), coord[::-1], va="center", ha="center", c="gold" if coord in self._terminal_coords else "black")
-        # Add numbers to rewarding states.
+            ax.annotate(str(r_val), coord[::-1], va="center", ha="center", c="black") # gold
+    
         
-        ax.imshow(render_grid, cmap="magma")
+        ax.imshow(render_grid, cmap=cmap)
 
 
-        ax.grid(which = 'major', axis = 'both', linestyle = '-', color = 'k', linewidth = 2, zorder = 1)
+        ax.grid(which = 'major', axis = 'both', linestyle = '-', color = render_colours["block_colour"], linewidth = 2, zorder = 1)
         ax.set_xticks(np.arange(-0.5, render_grid.shape[1] , 1))
         ax.set_xticklabels([])
         ax.set_yticks(np.arange(-0.5, render_grid.shape[0], 1))
         ax.set_yticklabels([])
+        ax.tick_params(left=False, bottom=False)
+
         plt.show()  
         
     # Finish and Test
@@ -223,7 +247,7 @@ class FourRooms(GridWorld):
         
         layout = np.loadtxt("env_layouts/four_rooms.txt", comments="//", dtype=str)
         super().__init__(layout, init_coords, terminal_coords, reward_coords, default_reward, stochasticity, seed)        
-
+        self.name = "FourRooms"
 
 class DeltaVMaze(GridWorld):
     def __init__(
@@ -238,6 +262,7 @@ class DeltaVMaze(GridWorld):
 
         layout = np.loadtxt("env_layouts/delta_v_maze.txt", comments="//", dtype=str)
         super().__init__(layout, init_coords, terminal_coords, reward_coords, default_reward, stochasticity, seed)
+        self.name = "DeltaVMaze"
 
 class ParrMaze(GridWorld):
     def __init__(
@@ -251,7 +276,7 @@ class ParrMaze(GridWorld):
         ):
         layout = np.loadtxt("env_layouts/parr_maze.txt", comments="//", dtype=str)
         super().__init__(layout, init_coords, terminal_coords, reward_coords, default_reward, stochasticity, seed)
-
+        self.name = "ParrMaze"
 
 gym.envs.registration.register(
     id='FourRooms-v0',
