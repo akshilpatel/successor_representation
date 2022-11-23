@@ -23,7 +23,7 @@ class GridWorld(gym.Env):
         self.layout = layout
         self.layout_key = {'#': -1, '.': 0}
 
-        self._action_to_direction = (np.array([1, 0]), np.array([0, 1]), np.array([-1, 0]), np.array([0, -1])) # S, E, N, W
+        self._action_to_direction = (np.array([-1, 0]), np.array([0, 1]), np.array([1, 0]), np.array([0, -1])) # N, E, S, W
         self.grid, self.num_valid_states, self.coord_to_valid_state, self.valid_state_to_coord = self._process_layout(self.layout, self.layout_key)
         
 
@@ -78,7 +78,7 @@ class GridWorld(gym.Env):
                     coord_to_valid_state_idx[(i, j)] = counter
                     counter += 1
 
-        valid_state_idx_to_coord = {v:k for k,v in coord_to_valid_state_idx.items()}
+        valid_state_idx_to_coord = {v: k for k,v in coord_to_valid_state_idx.items()}
 
         return grid, num_valid_states, coord_to_valid_state_idx, valid_state_idx_to_coord
     
