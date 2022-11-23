@@ -164,6 +164,7 @@ class GridWorld(gym.Env):
         fig = plt.figure(num = "env_render", figsize=figsize)
         ax = plt.gca()
         ax.clear()
+        clear_output(True)
 
         render_grid = deepcopy(self.grid)
         render_grid[self._agent_pos] = 2

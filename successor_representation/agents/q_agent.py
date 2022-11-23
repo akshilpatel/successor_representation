@@ -1,8 +1,8 @@
 import numpy as np
 from collections import defaultdict
+from successor_representation.agents.base import Agent
 
-class SRQLearningAgent:
-    # Assume discrete/Multidiscrete action and obs space.
+class SRQLearningAgent(Agent):
     def __init__(self, num_valid_obs, num_actions=4, sr_lr=0.2, sr_gamma=0.999, gamma=0.99, lr=0.5, seed=42, min_epsilon=1e-4, max_epsilon=1., epsilon_decay=0.99):
         self.num_actions = num_actions
         self.num_valid_obs = num_valid_obs
@@ -55,12 +55,4 @@ class SRQLearningAgent:
 
         return self.epsilon
     
-    def update_sr(self, transition):
-        obs = transition["valid_obs"]
-        next_obs = transition["valid_next_obs"]
     
-        kron_ohe = np.zeros(self.num_valid_obs)
-        kron_ohe[obs] = 1.
-    
-        deltas = self.sr_lr * (kron_ohe + self.sr_gamma * self.sr[next_obs] - self.sr[obs])
-        self.sr[obs] += deltas
